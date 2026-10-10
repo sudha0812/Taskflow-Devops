@@ -14,13 +14,14 @@ pipeline {
                 bat 'docker build -t taskflow:%BUILD_NUMBER% -t taskflow:latest .'
             }
         }
+        
         stage('Deploy to Kubernetes') {
             steps {
-                bat 'kubectl config current-context'
-                bat 'kubectl apply -f k8s/deployment.yaml'
-                bat 'kubectl apply -f k8s/service.yaml'
-                bat 'kubectl set image deployment/taskflow taskflow=taskflow:%BUILD_NUMBER%'
-                bat 'kubectl rollout status deployment/taskflow --timeout=120s'
+                bat 'kubectl --kubeconfig "C:\\Windows\\System32\\config\\systemprofile\\.kube\\config" config current-context'
+                bat 'kubectl --kubeconfig "C:\\Windows\\System32\\config\\systemprofile\\.kube\\config" apply -f k8s/deployment.yaml'
+                bat 'kubectl --kubeconfig "C:\\Windows\\System32\\config\\systemprofile\\.kube\\config" apply -f k8s/service.yaml'
+                bat 'kubectl --kubeconfig "C:\\Windows\\System32\\config\\systemprofile\\.kube\\config" set image deployment/taskflow taskflow=taskflow:%BUILD_NUMBER%'
+                bat 'kubectl --kubeconfig "C:\\Windows\\System32\\config\\systemprofile\\.kube\\config" rollout status deployment/taskflow --timeout=120s'
             }
         }
         stage('Smoke Test') {
