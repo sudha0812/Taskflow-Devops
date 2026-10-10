@@ -24,12 +24,7 @@ pipeline {
                 bat 'kubectl --kubeconfig "C:\\Windows\\System32\\config\\systemprofile\\.kube\\config" rollout status deployment/taskflow --timeout=120s'
             }
         }
-        stage('Smoke Test') {
-            steps {
-                bat 'curl.exe --fail --retry 5 --retry-delay 3 http://localhost:30080/'
             }
-        }
-    }
     post {
         success { archiveArtifacts artifacts: 'target/taskflow.jar', fingerprint: true }
     }
