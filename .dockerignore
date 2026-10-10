@@ -1,0 +1,8 @@
+.git
+.git
+.idea
+.vscode
+*.iml
+target/*
+!target/taskflow.jar
+README.md

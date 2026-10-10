@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TaskFlow | Student Task Tracker</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#172033;background:#f4f7fb}*{box-sizing:border-box}
+body{margin:0}.hero{background:linear-gradient(120deg,#243b80,#5276d9);color:white;padding:34px 20px}
+.wrap{max-width:900px;margin:auto}.hero h1{margin:0 0 8px;font-size:32px}.hero p{margin:0;color:#e2e9ff}
+main{max-width:900px;margin:24px auto;padding:0 16px}.panel{background:white;border-radius:14px;padding:20px;box-shadow:0 5px 22px #263e6810;margin-bottom:18px}
+form{display:grid;grid-template-columns:2fr 1fr auto;gap:10px}input,button,select{font:inherit;padding:11px 12px;border-radius:8px;border:1px solid #d5ddeb}
+button{background:#3559bd;color:white;border:0;font-weight:600;cursor:pointer}button:hover{background:#27469b}
+.task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #edf0f6}.task:last-child{border-bottom:0}
+.task h3{font-size:16px;margin:0 0 5px}.muted{color:#738098;font-size:13px}.right{display:flex;gap:8px;align-items:center}.pill{background:#edf2ff;color:#3559bd;padding:5px 9px;border-radius:20px;font-size:12px;white-space:nowrap}
+footer{text-align:center;color:#8490a5;font-size:12px;padding:20px}
+@media(max-width:620px){form{grid-template-columns:1fr}.task{align-items:flex-start;flex-direction:column}.right{width:100%;justify-content:space-between}}
+</style></head>
+<body>
+<header class="hero"><div class="wrap"><h1>TaskFlow</h1><p>A simple student task tracker · Built to demonstrate CI/CD and Kubernetes</p></div></header>
+<main>
+<section class="panel"><h2>Add a task</h2><form id="taskForm"><input id="title" placeholder="e.g. Finish DevOps lab" required maxlength="120"><input id="dueDate" type="date"><button type="submit">Add task</button></form></section>
+<section class="panel"><h2>Your tasks</h2><div id="tasks">Loading tasks…</div></section>
+<section class="panel"><strong>Service health:</strong> <span id="health">Checking…</span> · API endpoint: <code>/api/tasks</code></section>
+</main><footer>TaskFlow DevOps case study · Spring Boot + Maven + Docker + Kubernetes + Jenkins</footer>
+<script>
+async function loadTasks(){try{const r=await fetch('/api/tasks');if(!r.ok)throw Error();const tasks=await r.json();document.querySelector('#health').textContent='Online';const host=document.querySelector('#tasks');host.innerHTML='';if(!tasks.length){host.textContent='No tasks yet.';return}
+tasks.forEach(t=>{const row=document.createElement('div');row.className='task';const info=document.createElement('div');const h=document.createElement('h3');h.textContent=t.title;const d=document.createElement('div');d.className='muted';d.textContent='Due: '+(t.dueDate||'Not set')+' · Task #'+t.id;info.append(h,d);const right=document.createElement('div');right.className='right';const pill=document.createElement('span');pill.className='pill';pill.textContent=t.status;const select=document.createElement('select');['To Do','In Progress','Done'].forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===t.status)o.selected=true;select.append(o)});select.addEventListener('change',async()=>{await fetch('/api/tasks/'+t.id+'/status',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:select.value})});loadTasks()});right.append(pill,select);row.append(info,right);host.append(row)})}catch(e){document.querySelector('#health').textContent='Unavailable';document.querySelector('#tasks').textContent='Could not load tasks.'}}
+document.querySelector('#taskForm').addEventListener('submit',async e=>{e.preventDefault();const title=document.querySelector('#title').value;const dueDate=document.querySelector('#dueDate').value||null;const r=await fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,dueDate})});if(r.ok){e.target.reset();loadTasks()}else alert('Could not add task. Please check the title.')});loadTasks();
+</script></body></html>
